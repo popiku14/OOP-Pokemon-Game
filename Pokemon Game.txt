@@ -1,0 +1,1441 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <sstream>
+using namespace std;
+class jucator{
+public:
+    string name, mode;
+    vector<string> abl;
+    int level ,hp_level,atk_level,def_level,sp_atk_level,sp_def_level,spd_level;
+    int base_hp, base_atk, base_def, base_sp_atk, base_sp_def, base_spd;
+    int stage;
+    int pwr;
+    int stage_ef;
+    int exp;
+    int atk, def, sp_atk, sp_def, spd;
+
+    void upd_by_lvl(){
+        hp_level = ((base_hp*level)/50)+level+10;
+        atk_level = ((base_atk*level)/50)+10;
+        def_level = ((base_atk*level)/50)+10;
+        sp_atk_level = ((base_atk*level)/50)+10;
+        sp_def_level = ((base_atk*level)/50)+10;
+        spd_level = ((base_atk*level)/50)+10;
+    }
+    void upd_efectiv(){
+        atk = atk_level;
+        def = def_level;
+        sp_atk = sp_atk_level;
+        sp_def = sp_def_level;
+        spd = spd_level;
+    }
+};
+int main() {
+
+    string champs, atr;
+    string name;
+    int dmg;
+    int lvl, mod, abl1, abl2;
+    vector<jucator> player;
+    int j = 0, i = 0;
+    
+    ifstream myfile1("wow.txt");
+    ifstream myfile2("test.txt");
+    int nr = 0;
+    string line;
+
+    getline(cin, line);
+    getline(cin, line);
+    while (getline(cin, line)) {
+
+        stringstream check1(line);
+
+        vector<string> tokenize;
+        string intermediate;
+        while (getline(check1, intermediate, ' ')) {
+
+            tokenize.push_back(intermediate);
+
+        }
+        jucator jj;
+        stringstream ss;
+        ss << tokenize[1];
+        jj.name = tokenize[0];
+
+        ss >> jj.level;
+
+        jj.mode = tokenize[2];
+        for (int i = 3; i < tokenize.size(); i++) {
+            jj.abl.push_back(tokenize[i]);
+
+        }
+
+        player.push_back(jj);
+    }
+
+
+    for (int i = 0; i < player.size(); i++) {
+        ifstream myfile3("wow.txt");
+
+        while (getline(myfile3, line)) {
+
+            stringstream check2(line);
+
+            vector<string> tokenize1;
+            string intermediate1;
+            while (getline(check2, intermediate1, ' ')) {
+
+                tokenize1.push_back(intermediate1);
+
+            }
+
+            if (tokenize1[0] == player[i].name){
+                stringstream ss1;
+                stringstream ss2;
+                stringstream ss3;
+                stringstream ss4;
+                stringstream ss5;
+                stringstream ss6;
+                ss1 << tokenize1[1];
+                ss2 << tokenize1[2];
+                ss3 << tokenize1[3];
+                ss4 << tokenize1[4];
+                ss5 << tokenize1[5];
+                ss6 << tokenize1[6];
+                ss1 >> player[i].base_hp ;
+                ss2 >> player[i].base_atk ;
+                ss3 >> player[i].base_def ;
+                ss4 >> player[i].base_sp_atk ;
+                ss5 >> player[i].base_sp_def ;
+                ss6 >> player[i].base_spd ;
+
+            }
+
+        }
+        myfile3.close();
+
+    }
+    int k = 0;
+    int exp = 0;
+    
+    for (int i = 1; i < player.size();i++) {
+        player[0].upd_by_lvl();
+        player[0].upd_efectiv();
+        int m=0;
+        player[i].upd_by_lvl();
+        player[i].upd_efectiv();
+            cout << player[0].hp_level << " " << player[0].atk << " " << player[0].def << " " << player[0].sp_atk << " " << player[0].sp_def << " " << player[0].spd;
+            cout << endl;
+            cout << player[i].hp_level << " " << player[i].atk << " " << player[i].def << " " << player[i].sp_atk << " " << player[i].sp_def << " " << player[i].spd;
+            cout << endl;
+            int self_mod_eu=1, enemy_mod_eu=1, enemy_mod_i=1, self_mod_i=1;
+            int self_mod_eu_sp_atk= 1;
+            int self_mod_eu_spp =0  ;
+        while (player[0].hp_level>0 && player[i].hp_level>0) {
+
+            
+           
+            if (player[0].spd >= player[i].spd) {
+                
+                if(player[0].mode == "MEDIU" && player[0].hp_level > 0){
+                        
+                    ifstream myfile4("test.txt");
+                    
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+                            
+                            
+                            
+                        if (tokenize2[0] == player[0].abl[k]) {
+                                
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j+1];
+                                    ss_pwr >> player[0].pwr;
+
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].atk_level) /
+                                              (60 * player[i].def_level);
+                                    }
+
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].sp_atk_level) /
+                                              (60 * player[i].sp_def_level);
+                                    }
+
+                                    player[i].hp_level = player[i].hp_level - dmg;
+
+                                }
+                                
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_eu)) * player[0].atk_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage < - 6) player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 +6));
+                                            else player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage*self_mod_eu_sp_atk)));
+                                        } else {
+                                            if (player[0].stage > 6 ){
+                                                player[0].sp_atk = ((2 + 6) * player[0].sp_atk_level / 2);
+                                            }
+                                            else player[0].sp_atk = ((2 + (player[0].stage*self_mod_eu_sp_atk)) * player[0].sp_atk_level / 2);
+                                        }
+                                        self_mod_eu_sp_atk++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].sp_def = ((2 + (player[0].stage*self_mod_eu)) * player[0].sp_def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        
+                                        if (player[0].stage < 0) {
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_eu)));
+                                            
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_eu)) * player[0].spd_level / 2);
+                                        
+                                        self_mod_eu++;
+                                    }
+                                }
+                                
+                                if (player[i].hp_level > 0) {
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            
+                                            if (player[i].stage*enemy_mod_eu < -6 )
+                                            {   
+                                                int x = -6;
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - x));
+                                            }
+                                            else {
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage * enemy_mod_eu) ));
+                                            }
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].spd_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                }
+                                }
+                                
+                            }
+                           
+                        }
+                         
+                    }
+                    k++;
+                    if (k > player[0].abl.size()-1) k = 0;
+                    myfile4.close();
+                    
+                }
+                if (player[0].mode == "USOR" && player[0].hp_level > 0) {
+                    ifstream myfile4("test.txt");
+
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+
+                        if (tokenize2[0] == player[0].abl[0]) {
+                            
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j+1];
+                                    ss_pwr >> player[0].pwr;
+
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].atk_level) /
+                                              (60 * player[i].def_level);
+                                    }
+
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].sp_atk) /
+                                              (60 * player[i].sp_def_level);
+                                    }
+
+                                    player[i].hp_level = player[i].hp_level - dmg;
+
+                                }
+                                
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_eu)) * player[0].atk_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        
+                                        player[0].stage = player[0].stage + self_mod_eu_spp;
+                                        
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage < - 6) player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 +6));
+                                            else player[0].sp_atk = ((2 * player[0].sp_atk) / (2 - (player[0].stage)));
+                                        } else {
+                                            if (player[0].stage > 6 ){
+                                                player[0].sp_atk = ((2 + 6) * player[0].sp_atk_level / 2);
+                                            }
+                                            else player[0].sp_atk = ((2 + (player[0].stage)) * player[0].sp_atk_level / 2);
+                                        }
+                                        
+                                        self_mod_eu_spp = player[0].stage;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].sp_def = ((2 + (player[0].stage*self_mod_eu)) * player[0].sp_def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        
+                                        if (player[0].stage < 0) {
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_eu)));
+                                            
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_eu)) * player[0].spd_level / 2);
+                                        
+                                        self_mod_eu++;
+                                    }
+                                }
+                                if (player[i].hp_level > 0) {
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            
+                                            if (player[i].stage*enemy_mod_eu < -6 )
+                                            {   
+                                                int x = -6;
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - x));
+                                            }
+                                            else {
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage * enemy_mod_eu) ));
+                                            }
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].spd_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                }
+                                }
+                            }
+                            
+                        }
+
+                    }
+
+                    myfile4.close();
+                    
+
+                }
+                if (player[i].mode == "USOR" && player[i].hp_level > 0) {
+                    ifstream myfile4("test.txt");
+            
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+
+                        if (tokenize2[0] == player[i].abl[0]) {
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j + 1];
+                                    ss_pwr >> player[i].pwr;
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].atk_level) /
+                                              (60 * player[0].def_level);
+                                    }
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].sp_atk_level) /
+                                              (60 * player[0].sp_def_level);
+                                    }
+                                    player[0].hp_level = player[0].hp_level - dmg;
+                                }
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_i)) * player[i].spd_level / 2);
+                                        self_mod_i++;
+                                    }
+                                }
+                                if (player[0].hp_level > 0 ){
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                        } else player[0].atk = ((2 + (player[0].stage*enemy_mod_i)) * player[0].atk_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                        } else player[0].sp_atk = ((2 + (player[0].stage*enemy_mod_i)) * player[0].sp_atk_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage*enemy_mod_i < -6){
+                                                player[0].sp_def = ((2 * player[0].sp_def_level) / (2 +6));
+                                            }
+                                            else player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                        } else {
+                                            if (player[0].stage*enemy_mod_i > 6){
+                                                player[0].sp_def = ((2 + 6) * player[0].sp_def_level / 2);
+                                            }
+                                            else player[0].sp_def = ((2 + (player[0].stage*enemy_mod_i)) * player[0].sp_def_level / 2);
+                                        }
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage*enemy_mod_i < 0) {
+                                            if (player[0].stage*enemy_mod_i < -6){
+                                                int x = -6;
+                                                player[0].spd= (2 * player[0].spd_level) / (2 - x);
+                                                
+                                            }
+                                            else {
+                                                 player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                            }
+                                        } else {
+                                            if (player[0].stage*enemy_mod_i > 6) player[0].spd = ((2 + 6) * player[0].spd_level / 2);
+                                            else  player[0].spd = ((2 + (player[0].stage*enemy_mod_i)) * player[0].spd_level / 2);
+                                        }
+                                        enemy_mod_i++;
+                                    }
+                                }
+                                }
+                            }
+                            
+                            
+                        }
+
+                    }
+
+                    myfile4.close();
+                    
+
+                }
+                if(player[i].mode == "MEDIU" && player[i].hp_level > 0){
+                        
+                    ifstream myfile4("test.txt");
+                    
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+                            
+                            
+                            
+                        if (tokenize2[0] == player[i].abl[m]) {
+                                
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j + 1];
+                                    ss_pwr >> player[i].pwr;
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].atk_level) /
+                                              (60 * player[0].def_level);
+                                    }
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].sp_atk_level) /
+                                              (60 * player[0].sp_def_level);
+                                    }
+                                    player[0].hp_level = player[0].hp_level - dmg;
+                                }
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_i)) * player[i].spd_level / 2);
+                                        self_mod_i++;
+                                    }
+                                }
+                                
+                                if (player[0].hp_level > 0){
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_i)) * player[0].atk_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        player[0].stage = player[0].stage + self_mod_eu_spp;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage)));
+                                        } else player[0].sp_atk = ((2 + (player[0].stage)) * player[0].sp_atk_level / 2);
+                                        
+                                        self_mod_eu_spp = player[0].stage;;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage*self_mod_i < -6){
+                                                
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 + 6));
+                                            }
+                                            else player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                            
+                                        } else {
+                                            if (player[0].stage > 6) player[0].sp_def = ((2 + 6) * player[0].sp_def_level / 2);
+                                            else player[0].sp_def = ((2 + (player[0].stage*enemy_mod_i)) * player[0].sp_def_level / 2);
+                                        }
+                                        
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_i)) * player[0].spd_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                }
+                                }
+                                
+                            }
+                           
+                        }
+                         
+                    }
+                    m++;
+                    if (m > player[0].abl.size()-1) m = 0;
+                    myfile4.close();
+                    
+                }
+                
+
+            }
+            else {
+                if (player[i].mode == "USOR" && player[i].hp_level > 0) {
+                    ifstream myfile4("test.txt");
+                    
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+
+                        if (tokenize2[0] == player[i].abl[0]) {
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j + 1];
+                                    ss_pwr >> player[i].pwr;
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].atk_level) /
+                                              (60 * player[0].def_level);
+                                    }
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].sp_atk_level) /
+                                              (60 * player[0].sp_def_level);
+                                    }
+                                    player[0].hp_level = player[0].hp_level - dmg;
+                                }
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_i)) * player[i].spd_level / 2);
+                                        self_mod_i++;
+                                    }
+                                }
+                                
+                                if (player[0].hp_level > 0){
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_i)) * player[0].atk_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage*self_mod_eu_sp_atk < 0) {
+                                            player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage*self_mod_eu_sp_atk)));
+                                        } else player[0].sp_atk = ((2 + (player[0].stage*self_mod_eu_sp_atk)) * player[0].sp_atk_level / 2);
+                                        
+                                        self_mod_eu_sp_atk = player[0].stage;;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage*self_mod_i < -6){
+                                                
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 + 6));
+                                            }
+                                            else player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                            
+                                        } else {
+                                            if (player[0].stage > 6) player[0].sp_def = ((2 + 6) * player[0].sp_def_level / 2);
+                                            else player[0].sp_def = ((2 + (player[0].stage*enemy_mod_i)) * player[0].sp_def_level / 2);
+                                        }
+                                        
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_i)) * player[0].spd_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                }
+                                }
+                            }
+                        }
+
+                    }
+
+                    myfile4.close();
+                    
+                }
+                if(player[i].mode == "MEDIU" && player[i].hp_level > 0){
+                        
+                    ifstream myfile4("test.txt");
+                    
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+                            
+                            
+                            
+                        if (tokenize2[0] == player[i].abl[m]) {
+                                
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j + 1];
+                                    ss_pwr >> player[i].pwr;
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].atk_level) /
+                                              (60 * player[0].def_level);
+                                    }
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[i].level * player[i].pwr * player[i].sp_atk_level) /
+                                              (60 * player[0].sp_def_level);
+                                    }
+                                    player[0].hp_level = player[0].hp_level - dmg;
+                                }
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_atk_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_i)) * player[i].sp_def_level / 2);
+                                        self_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_i)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_i)) * player[i].spd_level / 2);
+                                        self_mod_i++;
+                                    }
+                                }
+                                
+                                if (player[0].hp_level > 0){
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_i)) * player[0].atk_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage*self_mod_eu_sp_atk < 0) {
+                                            player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage*self_mod_eu_sp_atk)));
+                                        } else player[0].sp_atk = ((2 + (player[0].stage*self_mod_eu_sp_atk)) * player[0].sp_atk_level / 2);
+                                        
+                                        self_mod_eu_sp_atk = player[0].stage;;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage*self_mod_i < -6){
+                                                
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 + 6));
+                                            }
+                                            else player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*enemy_mod_i)));
+                                            
+                                        } else {
+                                            if (player[0].stage > 6) player[0].sp_def = ((2 + 6) * player[0].sp_def_level / 2);
+                                            else player[0].sp_def = ((2 + (player[0].stage*enemy_mod_i)) * player[0].sp_def_level / 2);
+                                        }
+                                        
+                                        enemy_mod_i++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_i)));
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_i)) * player[0].spd_level / 2);
+                                        enemy_mod_i++;
+                                    }
+                                }
+                                }
+                                
+                            }
+                           
+                        }
+                         
+                    }
+                    m++;
+                    if (m > player[0].abl.size()-1) m = 0;
+                    myfile4.close();
+                    
+                }
+                if(player[0].mode == "MEDIU" && player[0].hp_level > 0){
+                        
+                    ifstream myfile4("test.txt");
+                    
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+                            
+                            
+                            
+                        if (tokenize2[0] == player[0].abl[k]) {
+                                
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j+1];
+                                    ss_pwr >> player[0].pwr;
+
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].atk_level) /
+                                              (60 * player[i].def_level);
+                                    }
+
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].sp_atk) /
+                                              (60 * player[i].sp_def_level);
+                                    }
+
+                                    player[i].hp_level = player[i].hp_level - dmg;
+
+                                }
+                                
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_eu)) * player[0].atk_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        
+                                        player[0].stage = player[0].stage + self_mod_eu_sp_atk;
+                                        
+                                        if (player[0].stage < 0) {
+                                            if (player[0].stage < - 6) player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 +6));
+                                            else player[0].sp_atk = ((2 * player[0].sp_atk) / (2 - (player[0].stage)));
+                                        } else {
+                                            if (player[0].stage > 6 ){
+                                                player[0].sp_atk = ((2 + 6) * player[0].sp_atk_level / 2);
+                                            }
+                                            else player[0].sp_atk = ((2 + (player[0].stage)) * player[0].sp_atk_level / 2);
+                                        }
+                                        
+                                        self_mod_eu_sp_atk = player[0].stage;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].sp_def = ((2 + (player[0].stage*self_mod_eu)) * player[0].sp_def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        
+                                        if (player[0].stage < 0) {
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_eu)));
+                                            
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_eu)) * player[0].spd_level / 2);
+                                        
+                                        self_mod_eu++;
+                                    }
+                                }
+                               
+                                if (player[i].hp_level > 0) {
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            
+                                            if (player[i].stage*enemy_mod_eu < -6 )
+                                            {   
+                                                int x = -6;
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - x));
+                                            }
+                                            else {
+                                                player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage * enemy_mod_eu) ));
+                                            }
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].spd_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                }
+                                }
+                                
+                            }
+                           
+                        }
+                         
+                    }
+                    k++;
+                    if (k > player[0].abl.size()-1) k = 0;
+                    myfile4.close();
+                    
+                }
+                if (player[0].mode == "USOR" && player[0].hp_level > 0) {
+                    ifstream myfile4("test.txt");
+
+                    while (getline(myfile4, line)) {
+
+                        stringstream check3(line);
+
+                        vector<string> tokenize2;
+                        string intermediate2;
+                        while (getline(check3, intermediate2, ' ')) {
+
+                            tokenize2.push_back(intermediate2);
+
+                        }
+
+                        if (tokenize2[0] == player[0].abl[0]) {
+                            for (int j = 1; j < tokenize2.size(); j++) {
+                                if (tokenize2[j] == "DMG") {
+                                    stringstream ss_pwr;
+                                    ss_pwr << tokenize2[j+1];
+                                    ss_pwr >> player[0].pwr;
+
+                                    if (tokenize2[j + 2] == "ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].atk_level) /
+                                              (60 * player[i].def_level);
+                                    }
+
+                                    if (tokenize2[j + 2] == "SP_ATK") {
+                                        dmg = (player[0].level * player[0].pwr * player[0].sp_atk_level) /
+                                              (60 * player[i].sp_def_level);
+                                    }
+
+                                    player[i].hp_level = player[i].hp_level - dmg;
+
+                                }
+
+                                if (tokenize2[j] == "SELF_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].atk = ((2 * player[0].atk_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].atk = ((2 + (player[0].stage*self_mod_eu)) * player[0].atk_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].def = ((2 * player[0].def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].def = ((2 + (player[0].stage*self_mod_eu)) * player[0].def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_atk = ((2 * player[0].sp_atk_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].sp_atk = ((2 + (player[0].stage*self_mod_eu)) * player[0].sp_atk_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].sp_def = ((2 * player[0].sp_def_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].sp_def = ((2 + (player[0].stage*self_mod_eu)) * player[0].sp_def_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[0].stage;
+                                        if (player[0].stage < 0) {
+                                            player[0].spd= ((2 * player[0].spd_level) / (2 - (player[0].stage*self_mod_eu)));
+                                        } else player[0].spd = ((2 + (player[0].stage*self_mod_eu)) * player[0].spd_level / 2);
+                                        self_mod_eu++;
+                                    }
+                                }
+                                if (tokenize2[j] == "ENEMY_MOD") {
+                                    if (tokenize2[j + 1] == "ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+
+                                        if (player[i].stage < 0) {
+                                            player[i].atk = ((2 * player[i].atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].def = ((2 * player[i].def_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_ATK") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_atk = ((2 * player[i].sp_atk_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].sp_atk = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_atk_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SP_DEF") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        if (player[i].stage < 0) {
+                                            player[i].sp_def = ((2 * player[i].sp_def_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].sp_def = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].sp_def_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                    if (tokenize2[j + 1] == "SPD") {
+                                        stringstream ss_stage;
+                                        ss_stage << tokenize2[j + 2];
+                                        ss_stage >> player[i].stage;
+                                        
+                                        if (player[i].stage < 0) {
+                                            player[i].spd = ((2 * player[i].spd_level) / (2 - (player[i].stage*enemy_mod_eu)));
+                                        } else player[i].spd = ((2 + (player[i].stage*enemy_mod_eu)) * player[i].spd_level / 2);
+                                        enemy_mod_eu++;
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    myfile4.close();
+                    
+                }
+                
+                
+                
+                
+            }
+                
+                if (player[i].hp_level < 0){
+                                    
+                    exp = exp + player[i].level;
+                }
+                
+                if (exp > (2 * player[0].level)){
+                    exp = exp - (2 * player[0].level);
+                    player[0].level = player[0].level +1;
+                }
+                if (player[0].level > 100) player[0].level = 100;
+                cout << player[0].hp_level << " " << player[0].atk << " " << player[0].def << " " << player[0].sp_atk << " " << player[0].sp_def << " " << player[0].spd;
+                cout << endl;
+                cout << player[i].hp_level << " " << player[i].atk << " " << player[i].def << " " << player[i].sp_atk << " " << player[i].sp_def << " " << player[i].spd;
+                cout << endl;
+                
+        }
+        cout << endl;
+    }
+    return 0;
+
+}
+
